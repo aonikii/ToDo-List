@@ -11,14 +11,27 @@
 
 ## ⚙️ Запуск проекта
 
-1. Создай файл `.env`:
+**1. Создай файл** `.env` **и запиши:**
 
-connStr=postgres://postgres:1234@localhost:5432/tododb?sslmode=disable
+```rb
 
-2. Установи зависимости
+connStr=postgres://user:password@localhost:5432/database?sslmode=disable
+
+```
+
+**2. Установи зависимости**
+
+```console
 
 go mod tidy
 
-3. Запусти проект
+```
+
+
+**3. Запусти проект**
+
+```console
 
 go run main.go
+
+```
