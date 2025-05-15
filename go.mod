@@ -1,4 +1,4 @@
-module ProjectGo
+module ToDo-List
 
 go 1.24.1
 
