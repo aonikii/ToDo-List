@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"ToDo-List/database"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,10 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gorilla/sessions"
-	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
 var templates = template.Must(template.ParseGlob("templates/*.html"))
 var store = sessions.NewCookieStore([]byte("super-secret-key"))
 
@@ -34,17 +32,8 @@ func main() {
 	}
 
 	connStr := os.Getenv("connStr")
-	db, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("Не удалось подключиться к базе:", err)
-	}
-
-	log.Println("Подключение к базе успешно")
+	db := database.ConnectToDb(connStr)
+	defer db.Close()
 
 	http.HandleFunc("/register", registerHandler)
 	http.HandleFunc("/login", loginHandler)
@@ -76,11 +65,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		_, err = db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", username, password)
-		if err != nil {
-			templates.ExecuteTemplate(w, "register.html", map[string]string{"Error": "Пользователь уже существует"})
-			return
-		}
+		database.InsertUsers(username, password)
 
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 	}
@@ -99,7 +84,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		var dbPassword string
 		var userID int
-		err := db.QueryRow("SELECT id, password FROM users WHERE username = $1", username).Scan(&userID, &dbPassword)
+		userID, dbPassword, err := database.LoginCheck(username)
 		if err != nil || bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(password)) != nil {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Неверное имя пользователя или пароль"})
 			return
@@ -127,12 +112,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, created_at FROM tasks WHERE user_id = $1", userID)
-	if err != nil {
-		log.Println("Ошибка SQL:", err)
-		http.Error(w, "Ошибка при получении задач", 500)
-		return
-	}
+	rows := database.TaskInfo(userID)
 	defer rows.Close()
 
 	var tasks []Task
@@ -178,11 +158,8 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	_, err := db.Exec("INSERT INTO tasks (user_id, title) VALUES ($1, $2)", userID, title)
-	if err != nil {
-		http.Error(w, "Ошибка при добавлении задачи", 500)
-		return
-	}
+
+	database.InsertTasks(userID, title)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
