@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
@@ -27,8 +28,7 @@ type Task struct {
 }
 
 func main() {
-	var err error
-	err = godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Ошибка загрузки .env файла")
 	}
@@ -72,8 +72,11 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			templates.ExecuteTemplate(w, "register.html", map[string]string{"Error": "Заполните все поля"})
 			return
 		}
-
-		_, err := db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", username, password)
+		password, err := hashPassword(password)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", username, password)
 		if err != nil {
 			templates.ExecuteTemplate(w, "register.html", map[string]string{"Error": "Пользователь уже существует"})
 			return
@@ -97,7 +100,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		var dbPassword string
 		var userID int
 		err := db.QueryRow("SELECT id, password FROM users WHERE username = $1", username).Scan(&userID, &dbPassword)
-		if err != nil || password != dbPassword {
+		if err != nil || bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(password)) != nil {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Неверное имя пользователя или пароль"})
 			return
 		}
@@ -182,4 +185,9 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
