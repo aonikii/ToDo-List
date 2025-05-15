@@ -27,8 +27,26 @@ go mod tidy
 
 ```
 
+**3. Добавь таблицы в базы данных:**
 
-**3. Запусти проект**
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
+
+CREATE TABLE tasks (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    done BOOLEAN DEFAULT FALSE,
+    user_id INTEGER NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+**4. Запусти проект**
 
 ```console
 
