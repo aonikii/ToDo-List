@@ -2,76 +2,57 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
 )
 
-func PsqlConnect() *sql.DB {
-	connStr := ""
-	db, err := sql.Open("postgres", connStr)
+var db *sql.DB
+
+func ConnectToDb(connStr string) *sql.DB {
+	var err error
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal("Ошибка открытия соединения:", err)
+		log.Fatal(err)
 	}
 
-	// Проверка подключения
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Ошибка подключения к БД:", err)
+		log.Fatal("Не удалось подключиться к базе:", err)
 	}
 
-	fmt.Println("Успешное подключение к БД")
+	log.Println("Подключение к базе успешно")
 	return db
 }
 
-func UserInsert(db *sql.DB) int {
-	_, err := db.Exec("INSERT INTO account(username, password) VALUES($1, $2)", "OnikiiPetuh", "qwerty123")
+func InsertUsers(username, password string) {
+	_, err := db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", username, password)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Добавлен пользователь")
-	return 0
 }
 
-func ShowTable(db *sql.DB) int {
-	rows, err := db.Query("SELECT * FROM account")
+func InsertTasks(userID interface{}, title string) {
+	_, err := db.Exec("INSERT INTO tasks (user_id, title) VALUES ($1, $2)", userID, title)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
-
-	fmt.Println("Список пользователей:")
-	for rows.Next() {
-		var id int
-		var username string
-		var password string
-		if err := rows.Scan(&id, &username, &password); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("ID: %d, Username: %s, Password: %s\n", id, username, password)
-	}
-	return 0
 }
 
-func UserCheck(db *sql.DB, username, password string) bool {
-	var exists bool
-	err := db.QueryRow(
-		"SELECT EXISTS (SELECT 1 FROM account WHERE username = $1)", username).Scan(&exists)
+func LoginCheck(username string) (int, string, error) {
+	var dbPassword string
+	var userID int
+	err := db.QueryRow("SELECT id, password FROM users WHERE username = $1", username).Scan(&userID, &dbPassword)
+
+	return userID, dbPassword, err
+}
+
+// returns id, title, created_at
+func TaskInfo(userID interface{}) *sql.Rows {
+	rows, err := db.Query("SELECT id, title, created_at FROM tasks WHERE user_id = $1", userID)
 	if err != nil {
-		log.Fatal("Ошибка проверки:", err)
-
+		log.Fatal("Ошибка SQL:", err)
 	}
-	if exists {
-		var pass string
-		err := db.QueryRow("SELECT password FROM account WHERE username = $1", username).Scan(&pass)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if pass == password {
-			return true
-		}
-	}
-	return false
 
+	return rows
 }
