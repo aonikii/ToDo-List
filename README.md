@@ -50,6 +50,6 @@ CREATE TABLE tasks (
 
 ```console
 
-go run main.go
+go run ./cmd
 
 ```
