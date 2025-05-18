@@ -23,9 +23,10 @@ func main() {
 
 	http.HandleFunc("/register", handlers.RegisterHandler)
 	http.HandleFunc("/login", handlers.LoginHandler)
-	http.HandleFunc("/", handlers.HomeHandler)
+	http.HandleFunc("/home", handlers.HomeHandler)
 	http.HandleFunc("/logout", handlers.LogoutHandler)
 	http.HandleFunc("/add", handlers.AddTaskHandler)
+	http.HandleFunc("/", handlers.WelcomeHandler)
 
 	log.Println("Сервер запущен на http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

@@ -8,7 +8,7 @@ import (
 
 func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
 
@@ -21,11 +21,11 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := r.FormValue("Title")
 	if title == "" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
 
 	database.InsertTasks(userID, title)
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
