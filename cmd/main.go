@@ -27,6 +27,7 @@ func main() {
 	http.HandleFunc("/logout", handlers.LogoutHandler)
 	http.HandleFunc("/add", handlers.AddTaskHandler)
 	http.HandleFunc("/", handlers.WelcomeHandler)
+	http.HandleFunc("/delete", handlers.DeleteTaskHandler)
 
 	log.Println("Сервер запущен на http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
