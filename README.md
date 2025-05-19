@@ -2,6 +2,8 @@
 
 Простой To-Do список, реализованный на Go с использованием PostgreSQL.
 
+![](https://raw.githubusercontent.com/aonikii/ToDo-List/main/GIF.gif)
+
 ## 🚀 Стек технологий
 
 - Go (net/http, database/sql, gorilla/sessions)
