@@ -50,7 +50,16 @@
         }
 
         h2 {
-            margin-bottom: 10px;
+            margin-bottom: 40px;
+            font-family: Arial;
+        }
+
+        .exit-btn {
+            margin-top: 10px;
+            font-family: Arial;
+            background-color: white;
+            color: black;
+            cursor: pointer;
         }
 
         form[action="/add"] {
@@ -78,6 +87,6 @@
         {{end}}
     </ul>
 
-    <a href="/logout">Выйти</a>
+    <button class="exit-btn" onclick="location.href='/logout'">Выход</button>
 </body>
 </html>
