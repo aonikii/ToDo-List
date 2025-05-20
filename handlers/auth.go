@@ -31,7 +31,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		password, err := hashPassword(password)
 		if err != nil {
-			log.Fatal(err)
+			log.Panic(err)
 		}
 		database.InsertUsers(username, password)
 

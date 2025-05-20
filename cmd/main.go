@@ -14,7 +14,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Ошибка загрузки .env файла")
+		log.Panic("Ошибка загрузки .env файла")
 	}
 
 	connStr := os.Getenv("connStr")
